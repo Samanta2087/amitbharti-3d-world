@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, User, ArrowRight, Search } from "lucide-react";
+import { LiveBlogFeed } from "@/components/realtime/LiveBlogFeed";
+import { CommentSystem } from "@/components/realtime/CommentSystem";
+import { UserPresence } from "@/components/realtime/UserPresence";
 
 const Blog = () => {
   const blogPosts = [
@@ -126,62 +129,19 @@ const Blog = () => {
           </div>
         ))}
 
-        {/* Regular Posts Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.filter(post => !post.featured).map((post) => (
-            <article key={post.id} className="card-3d rounded-xl overflow-hidden group cursor-pointer">
-              <div className="relative">
-                <img
-                  src={post.image}
-                  alt={post.title}
-                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-              
-              <div className="p-6">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground mb-3">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={14} />
-                    {new Date(post.date).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      year: 'numeric' 
-                    })}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                    {post.readTime}
-                  </span>
-                </div>
-                
-                <h3 className="text-xl font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-                  {post.title}
-                </h3>
-                
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
-                  {post.excerpt}
-                </p>
-                
-                <div className="flex items-center justify-between">
-                  <span className="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs font-medium">
-                    {post.category}
-                  </span>
-                  <Button variant="ghost" size="sm" className="text-primary hover:text-accent p-0">
-                    Read More
-                    <ArrowRight size={14} className="ml-1" />
-                  </Button>
-                </div>
-              </div>
-            </article>
-          ))}
+        {/* Live Blog Feed */}
+        <div className="mb-12">
+          <LiveBlogFeed maxPosts={6} />
         </div>
 
-        {/* Load More */}
-        <div className="text-center mt-12">
-          <Button size="lg" className="btn-glow">
-            Load More Articles
-          </Button>
+        {/* User Presence */}
+        <div className="mb-12">
+          <UserPresence roomId="blog" className="text-center" />
+        </div>
+
+        {/* Global Comments Section */}
+        <div className="mb-16">
+          <CommentSystem className="max-w-4xl mx-auto" />
         </div>
 
         {/* Newsletter CTA */}
