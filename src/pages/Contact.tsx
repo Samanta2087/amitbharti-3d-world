@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, MessageCircle, Phone, MapPin, Send, Youtube, Instagram } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -15,18 +16,57 @@ const Contact = () => {
 
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    toast.success("Message sent successfully! I'll get back to you soon.");
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    
+    try {
+      const { error } = await supabase
+        .from('contacts')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+          }
+        ]);
+
+      if (error) {
+        toast.error("Failed to send message. Please try again.");
+        console.error('Error submitting contact form:', error);
+      } else {
+        toast.success("Message sent successfully! I'll get back to you soon.");
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+      console.error('Error:', error);
+    }
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle newsletter subscription here
-    toast.success("Successfully subscribed to newsletter!");
-    setNewsletterEmail("");
+    
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert([{ email: newsletterEmail }]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast.error("You're already subscribed to our newsletter!");
+        } else {
+          toast.error("Failed to subscribe. Please try again.");
+        }
+        console.error('Error subscribing to newsletter:', error);
+      } else {
+        toast.success("Successfully subscribed to newsletter!");
+        setNewsletterEmail("");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+      console.error('Error:', error);
+    }
   };
 
   const contactInfo = [

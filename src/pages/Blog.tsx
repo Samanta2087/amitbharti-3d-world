@@ -1,11 +1,18 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, User, ArrowRight, Search } from "lucide-react";
 import { LiveBlogFeed } from "@/components/realtime/LiveBlogFeed";
 import { CommentSystem } from "@/components/realtime/CommentSystem";
 import { UserPresence } from "@/components/realtime/UserPresence";
+import { supabase } from "@/integrations/supabase/client";
 
 const Blog = () => {
-  const blogPosts = [
+  const [blogPosts, setBlogPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Posts");
+
+  const staticBlogPosts = [
     {
       id: 1,
       title: "Top 10 Online Earning Strategies for 2024",
@@ -41,6 +48,49 @@ const Blog = () => {
 
   const categories = ["All Posts", "Tech Reviews", "Online Earning", "Ayurveda", "Health & Wellness"];
 
+  useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        let query = supabase
+          .from('blog_posts')
+          .select(`
+            *,
+            profiles(display_name)
+          `)
+          .eq('published', true)
+          .order('created_at', { ascending: false });
+
+        if (selectedCategory !== "All Posts") {
+          query = query.eq('category', selectedCategory);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('Error fetching blog posts:', error);
+          setBlogPosts(staticBlogPosts); // Fallback to static posts
+        } else {
+          // Combine database posts with static posts
+          const combinedPosts = [...(data || []), ...staticBlogPosts];
+          setBlogPosts(combinedPosts);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        setBlogPosts(staticBlogPosts); // Fallback to static posts
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogPosts();
+  }, [selectedCategory]);
+
+  const filteredPosts = blogPosts.filter(post => 
+    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.excerpt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    post.category?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-background pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -63,14 +113,17 @@ const Blog = () => {
               type="text"
               placeholder="Search articles..."
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-border/50 bg-card/50 focus:border-primary focus:outline-none transition-colors"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <Button
                 key={category}
-                variant="outline"
+                variant={selectedCategory === category ? "default" : "outline"}
                 className="rounded-full hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                onClick={() => setSelectedCategory(category)}
               >
                 {category}
               </Button>
@@ -79,7 +132,7 @@ const Blog = () => {
         </div>
 
         {/* Featured Post */}
-        {blogPosts.filter(post => post.featured).map((post) => (
+        {filteredPosts.filter(post => post.featured).map((post) => (
           <div key={post.id} className="card-3d rounded-2xl overflow-hidden mb-12 group cursor-pointer">
             <div className="grid lg:grid-cols-2 gap-0">
               <div className="relative h-64 lg:h-auto">
@@ -98,7 +151,7 @@ const Blog = () => {
                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                   <span className="flex items-center gap-1">
                     <Calendar size={16} />
-                    {new Date(post.date).toLocaleDateString('en-US', { 
+                    {new Date(post.date || post.created_at).toLocaleDateString('en-US', { 
                       year: 'numeric', 
                       month: 'long', 
                       day: 'numeric' 
@@ -106,8 +159,14 @@ const Blog = () => {
                   </span>
                   <span className="flex items-center gap-1">
                     <Clock size={16} />
-                    {post.readTime}
+                    {post.read_time ? `${post.read_time} min read` : (post.readTime || '5 min read')}
                   </span>
+                  {(post.profiles?.display_name || post.author) && (
+                    <span className="flex items-center gap-1">
+                      <User size={16} />
+                      {post.profiles?.display_name || post.author}
+                    </span>
+                  )}
                 </div>
                 <h2 className="text-2xl lg:text-3xl font-poppins font-bold mb-4 group-hover:text-primary transition-colors">
                   {post.title}
