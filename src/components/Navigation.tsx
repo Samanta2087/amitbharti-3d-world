@@ -32,7 +32,6 @@ const Navigation = () => {
     { name: "Videos", path: "/videos" },
     { name: "About", path: "/about" },
     { name: "Blog", path: "/blog" },
-    { name: "Merch", path: "/merch" },
     { name: "Contact", path: "/contact" },
   ];
 
@@ -59,7 +58,7 @@ const Navigation = () => {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? "nav-glass shadow-lg" : "bg-transparent"
+      isScrolled || isOpen ? "nav-glass shadow-lg" : "bg-transparent"
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -115,7 +114,7 @@ const Navigation = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email} />
+                        <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email ?? ''} />
                         <AvatarFallback>
                           {user.email?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
@@ -156,9 +155,9 @@ const Navigation = () => {
 
         {/* Mobile Navigation */}
         <div className={`md:hidden transition-all duration-300 overflow-hidden ${
-          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          isOpen ? "max-h-[30rem] opacity-100" : "max-h-0 opacity-0"
         }`}>
-          <div className="py-4 space-y-4 border-t border-border/50 mt-4">
+          <div className="pt-4 pb-8 space-y-4">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -174,7 +173,33 @@ const Navigation = () => {
               </Link>
             ))}
             
-            {/* Mobile Social Links */}
+            <div className="pt-4 border-t border-border/50">
+              {user ? (
+                <div className="flex items-center justify-between px-4">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.email ?? ''} />
+                      <AvatarFallback>
+                        {user.email?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{user.user_metadata?.name || user.email}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => { signOut(); setIsOpen(false); }}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/auth" onClick={() => setIsOpen(false)} className="block px-4">
+                  <Button className="w-full btn-glow">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In / Sign Up
+                  </Button>
+                </Link>
+              )}
+            </div>
+            
             <div className="flex items-center justify-center space-x-4 pt-4 border-t border-border/50">
               {socialLinks.map((social) => (
                 <a
@@ -189,12 +214,6 @@ const Navigation = () => {
                 </a>
               ))}
             </div>
-            
-            <div className="pt-4">
-              <Button className="w-full btn-glow">
-                Subscribe to Channel
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -203,3 +222,4 @@ const Navigation = () => {
 };
 
 export default Navigation;
+

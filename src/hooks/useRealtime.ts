@@ -72,13 +72,12 @@ export const useRealtimeComments = (postId?: string) => {
   const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
-    // Fetch initial comments
     const fetchComments = async () => {
       const query = supabase
         .from('comments')
         .select(`
           *,
-          profiles!comments_author_id_fkey (display_name, avatar_url)
+          profiles (display_name, avatar_url)
         `)
         .order('created_at', { ascending: true });
 
@@ -92,7 +91,6 @@ export const useRealtimeComments = (postId?: string) => {
 
     fetchComments();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('comments-changes')
       .on(
@@ -111,7 +109,7 @@ export const useRealtimeComments = (postId?: string) => {
               comment.id === payload.new.id ? payload.new as Comment : comment
             ));
           } else if (payload.eventType === 'DELETE') {
-            setComments(prev => prev.filter(comment => comment.id !== payload.old.id));
+            setComments(prev => prev.filter(comment => comment.id !== (payload.old as any).id));
           }
         }
       )
@@ -124,7 +122,7 @@ export const useRealtimeComments = (postId?: string) => {
 
   const addComment = async (content: string, blogPostId?: string, parentId?: string) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) return { error: { message: "User not authenticated" }};
 
     const { error } = await supabase
       .from('comments')
@@ -145,23 +143,29 @@ export const useRealtimeBlogPosts = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
 
   useEffect(() => {
-    // Fetch initial blog posts
     const fetchBlogPosts = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('blog_posts')
         .select(`
           *,
-          profiles!blog_posts_author_id_fkey (display_name, avatar_url)
+          author:auth.users (
+            id,
+            email,
+            full_name -- or whatever fields you need
+          )
         `)
         .eq('published', true)
         .order('created_at', { ascending: false });
 
-      if (data) setBlogPosts(data as any);
+      if (error) {
+          console.error("Error fetching blog posts:", error);
+      } else if (data) {
+          setBlogPosts(data as any);
+      }
     };
 
     fetchBlogPosts();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('blog-posts-changes')
       .on(
@@ -172,16 +176,8 @@ export const useRealtimeBlogPosts = () => {
           table: 'blog_posts',
           filter: 'published=eq.true'
         },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setBlogPosts(prev => [payload.new as BlogPost, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setBlogPosts(prev => prev.map(post => 
-              post.id === payload.new.id ? payload.new as BlogPost : post
-            ));
-          } else if (payload.eventType === 'DELETE') {
-            setBlogPosts(prev => prev.filter(post => post.id !== payload.old.id));
-          }
+        () => {
+           fetchBlogPosts();
         }
       )
       .subscribe();
@@ -200,7 +196,6 @@ export const useRealtimeNotifications = (userId?: string) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Fetch initial notifications
     const fetchNotifications = async () => {
       const { data } = await supabase
         .from('notifications')
@@ -213,7 +208,6 @@ export const useRealtimeNotifications = (userId?: string) => {
 
     fetchNotifications();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('notifications-changes')
       .on(
@@ -257,21 +251,18 @@ export const useRealtimeYoutubeStats = () => {
   const [youtubeStats, setYoutubeStats] = useState<YoutubeStats | null>(null);
 
   useEffect(() => {
-    // Fetch initial YouTube stats
     const fetchYoutubeStats = async () => {
       const { data } = await supabase
         .from('youtube_stats')
         .select('*')
         .order('last_updated', { ascending: false })
-        .limit(1)
-        .single();
+        .limit(1);
 
-      if (data) setYoutubeStats(data);
+      if (data && data.length > 0) setYoutubeStats(data[0]);
     };
 
     fetchYoutubeStats();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('youtube-stats-changes')
       .on(
@@ -281,10 +272,8 @@ export const useRealtimeYoutubeStats = () => {
           schema: 'public',
           table: 'youtube_stats'
         },
-        (payload) => {
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            setYoutubeStats(payload.new as YoutubeStats);
-          }
+        () => {
+             fetchYoutubeStats();
         }
       )
       .subscribe();
@@ -310,9 +299,9 @@ export const useUserPresence = (roomId: string) => {
         const users: Profile[] = [];
         
         Object.keys(presenceState).forEach((key) => {
-          const presences = presenceState[key];
+          const presences = presenceState[key] as unknown as any[];
           if (presences && presences.length > 0) {
-            const presence = presences[0] as any;
+            const presence = presences[0];
             if (presence.user_id) {
               users.push(presence);
             }

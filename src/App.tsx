@@ -9,7 +9,7 @@ import Home from "./pages/Home";
 import Videos from "./pages/Videos";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
-import Merch from "./pages/Merch";
+// import Merch from "./pages/Merch";
 import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
@@ -30,7 +30,7 @@ const App = () => (
             <Route path="/videos" element={<Videos />} />
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog />} />
-            <Route path="/merch" element={<Merch />} />
+            {/* <Route path="/merch" element={<Merch />} /> */}
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin/*" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />

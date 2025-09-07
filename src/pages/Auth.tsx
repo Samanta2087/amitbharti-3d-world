@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, User } from 'lucide-react';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -20,6 +21,8 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   useEffect(() => {
     if (user && !loading) {
@@ -31,8 +34,19 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!captchaToken) {
+      toast({
+        title: "CAPTCHA required",
+        description: "Please complete the CAPTCHA challenge.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await signIn(email, password);
+      // @ts-expect-error
+      const { error } = await signIn(email, password, captchaToken);
       if (error) {
         toast({
           title: "Sign in failed",
@@ -53,6 +67,8 @@ const Auth = () => {
       });
     } finally {
       setIsLoading(false);
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
     }
   };
 
@@ -60,8 +76,19 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!captchaToken) {
+      toast({
+        title: "CAPTCHA required",
+        description: "Please complete the CAPTCHA challenge.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await signUp(email, password, displayName);
+      // @ts-expect-error
+      const { error } = await signUp(email, password, captchaToken, displayName);
       if (error) {
         toast({
           title: "Sign up failed",
@@ -82,6 +109,8 @@ const Auth = () => {
       });
     } finally {
       setIsLoading(false);
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken(null);
     }
   };
 
@@ -166,7 +195,13 @@ const Auth = () => {
                   </div>
                 </div>
                 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <HCaptcha
+                  sitekey="fabaeb8a-3d54-464a-ad78-35c00e8090b2"
+                  onVerify={setCaptchaToken}
+                  ref={captchaRef}
+                />
+
+                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
                 </Button>
@@ -248,8 +283,14 @@ const Auth = () => {
                     />
                   </div>
                 </div>
+
+                <HCaptcha
+                  sitekey="fabaeb8a-3d54-464a-ad78-35c00e8090b2"
+                  onVerify={setCaptchaToken}
+                  ref={captchaRef}
+                />
                 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign Up
                 </Button>
