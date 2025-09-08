@@ -55,7 +55,7 @@ const Blog = () => {
           .from('blog_posts')
           .select(`
             *,
-            profiles!author_id (
+            profiles(
               display_name,
               avatar_url
             )

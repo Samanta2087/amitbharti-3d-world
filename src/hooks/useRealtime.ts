@@ -77,7 +77,7 @@ export const useRealtimeComments = (postId?: string) => {
         .from('comments')
         .select(`
           *,
-          profiles (display_name, avatar_url)
+          profiles(display_name, avatar_url)
         `)
         .order('created_at', { ascending: true });
 
@@ -148,7 +148,7 @@ export const useRealtimeBlogPosts = () => {
         .from('blog_posts')
         .select(`
           *,
-          profiles!author_id (
+          profiles(
             display_name,
             avatar_url
           )
