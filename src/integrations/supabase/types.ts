@@ -28,6 +28,7 @@ export type Database = {
           read_time: number | null
           title: string
           updated_at: string
+          video_url: string | null
         }
         Insert: {
           author_id: string
@@ -42,6 +43,7 @@ export type Database = {
           read_time?: number | null
           title: string
           updated_at?: string
+          video_url?: string | null
         }
         Update: {
           author_id?: string
@@ -56,6 +58,7 @@ export type Database = {
           read_time?: number | null
           title?: string
           updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -93,6 +96,13 @@ export type Database = {
             columns: ["blog_post_id"]
             isOneToOne: false
             referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts_with_author"
             referencedColumns: ["id"]
           },
           {
@@ -334,7 +344,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      blog_posts_with_author: {
+        Row: {
+          author_id: string | null
+          avatar_url: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          display_name: string | null
+          excerpt: string | null
+          featured: boolean | null
+          id: string | null
+          image_url: string | null
+          published: boolean | null
+          read_time: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
