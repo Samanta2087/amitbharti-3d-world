@@ -21,8 +21,11 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<ReCAPTCHA>(null);
+
+  // IMPORTANT: Replace this with your actual Google reCAPTCHA Site Key
+  const VITE_RECAPTCHA_SITE_KEY = "6LcmeMIrAAAAAA5Ht3NSEu0FszWehtupmgOm8KmL";
 
   useEffect(() => {
     if (user && !loading) {
@@ -34,9 +37,9 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!recaptchaToken) {
+    if (!captchaToken) {
       toast({
-        title: "reCAPTCHA required",
+        title: "CAPTCHA required",
         description: "Please complete the reCAPTCHA challenge.",
         variant: "destructive",
       });
@@ -45,7 +48,7 @@ const Auth = () => {
     }
 
     try {
-      const { error } = await signIn(email, password, recaptchaToken);
+      const { error } = await signIn(email, password, captchaToken);
       if (error) {
         toast({
           title: "Sign in failed",
@@ -66,8 +69,8 @@ const Auth = () => {
       });
     } finally {
       setIsLoading(false);
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
+      captchaRef.current?.reset();
+      setCaptchaToken(null);
     }
   };
 
@@ -75,9 +78,9 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!recaptchaToken) {
+    if (!captchaToken) {
       toast({
-        title: "reCAPTCHA required",
+        title: "CAPTCHA required",
         description: "Please complete the reCAPTCHA challenge.",
         variant: "destructive",
       });
@@ -86,7 +89,7 @@ const Auth = () => {
     }
 
     try {
-      const { error } = await signUp(email, password, recaptchaToken, displayName);
+      const { error } = await signUp(email, password, captchaToken, displayName);
       if (error) {
         toast({
           title: "Sign up failed",
@@ -107,8 +110,8 @@ const Auth = () => {
       });
     } finally {
       setIsLoading(false);
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
+      captchaRef.current?.reset();
+      setCaptchaToken(null);
     }
   };
 
@@ -194,12 +197,12 @@ const Auth = () => {
                 </div>
                 
                 <ReCAPTCHA
-                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                  onChange={setRecaptchaToken}
-                  ref={recaptchaRef}
+                  sitekey={VITE_RECAPTCHA_SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  ref={captchaRef}
                 />
 
-                <Button type="submit" className="w-full" disabled={isLoading || !recaptchaToken}>
+                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
                 </Button>
@@ -283,12 +286,12 @@ const Auth = () => {
                 </div>
 
                 <ReCAPTCHA
-                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                  onChange={setRecaptchaToken}
-                  ref={recaptchaRef}
+                  sitekey={VITE_RECAPTCHA_SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  ref={captchaRef}
                 />
                 
-                <Button type="submit" className="w-full" disabled={isLoading || !recaptchaToken}>
+                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign Up
                 </Button>
