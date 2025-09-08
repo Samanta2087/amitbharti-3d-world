@@ -148,10 +148,9 @@ export const useRealtimeBlogPosts = () => {
         .from('blog_posts')
         .select(`
           *,
-          author:auth.users (
-            id,
-            email,
-            full_name -- or whatever fields you need
+          profiles!author_id (
+            display_name,
+            avatar_url
           )
         `)
         .eq('published', true)

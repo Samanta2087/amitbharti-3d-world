@@ -21,6 +21,7 @@ const BlogPostForm = () => {
   const [excerpt, setExcerpt] = useState('');
   const [category, setCategory] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [published, setPublished] = useState(false);
   const [featured, setFeatured] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,7 @@ const BlogPostForm = () => {
           setExcerpt(data.excerpt || '');
           setCategory(data.category || '');
           setImageUrl(data.image_url || '');
+          setVideoUrl(data.video_url || '');
           setPublished(data.published || false);
           setFeatured(data.featured || false);
         }
@@ -68,6 +70,7 @@ const BlogPostForm = () => {
       excerpt,
       category,
       image_url: imageUrl,
+      video_url: videoUrl,
       published,
       featured,
       author_id: user.id,
@@ -151,6 +154,10 @@ const BlogPostForm = () => {
                 <div>
                   <Label htmlFor="imageUrl">Image URL</Label>
                   <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="videoUrl">Video URL (YouTube, Vimeo, etc.)</Label>
+                  <Input id="videoUrl" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
                 </div>
               </CardContent>
             </Card>

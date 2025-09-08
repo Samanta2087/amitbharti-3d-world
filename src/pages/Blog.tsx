@@ -55,7 +55,10 @@ const Blog = () => {
           .from('blog_posts')
           .select(`
             *,
-            profiles(display_name)
+            profiles!author_id (
+              display_name,
+              avatar_url
+            )
           `)
           .eq('published', true)
           .order('created_at', { ascending: false });
