@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useGoogleAuth } from '@/hooks/useGoogleAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Mail, Lock, User } from 'lucide-react';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
+import ReCAPTCHA from "react-google-recaptcha";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -21,8 +21,8 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const captchaRef = useRef<HCaptcha>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     if (user && !loading) {
@@ -34,10 +34,10 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!captchaToken) {
+    if (!recaptchaToken) {
       toast({
-        title: "CAPTCHA required",
-        description: "Please complete the CAPTCHA challenge.",
+        title: "reCAPTCHA required",
+        description: "Please complete the reCAPTCHA challenge.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -45,7 +45,7 @@ const Auth = () => {
     }
 
     try {
-      const { error } = await signIn(email, password, captchaToken);
+      const { error } = await signIn(email, password, recaptchaToken);
       if (error) {
         toast({
           title: "Sign in failed",
@@ -66,8 +66,8 @@ const Auth = () => {
       });
     } finally {
       setIsLoading(false);
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     }
   };
 
@@ -75,10 +75,10 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (!captchaToken) {
+    if (!recaptchaToken) {
       toast({
-        title: "CAPTCHA required",
-        description: "Please complete the CAPTCHA challenge.",
+        title: "reCAPTCHA required",
+        description: "Please complete the reCAPTCHA challenge.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -86,7 +86,7 @@ const Auth = () => {
     }
 
     try {
-      const { error } = await signUp(email, password, captchaToken, displayName);
+      const { error } = await signUp(email, password, recaptchaToken, displayName);
       if (error) {
         toast({
           title: "Sign up failed",
@@ -107,8 +107,8 @@ const Auth = () => {
       });
     } finally {
       setIsLoading(false);
-      captchaRef.current?.resetCaptcha();
-      setCaptchaToken(null);
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     }
   };
 
@@ -193,13 +193,13 @@ const Auth = () => {
                   </div>
                 </div>
                 
-                <HCaptcha
-                  sitekey="fabaeb8a-3d54-464a-ad78-35c00e8090b2"
-                  onVerify={setCaptchaToken}
-                  ref={captchaRef}
+                <ReCAPTCHA
+                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                  onChange={setRecaptchaToken}
+                  ref={recaptchaRef}
                 />
 
-                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
+                <Button type="submit" className="w-full" disabled={isLoading || !recaptchaToken}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign In
                 </Button>
@@ -282,13 +282,13 @@ const Auth = () => {
                   </div>
                 </div>
 
-                <HCaptcha
-                  sitekey="fabaeb8a-3d54-464a-ad78-35c00e8090b2"
-                  onVerify={setCaptchaToken}
-                  ref={captchaRef}
+                <ReCAPTCHA
+                  sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+                  onChange={setRecaptchaToken}
+                  ref={recaptchaRef}
                 />
                 
-                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
+                <Button type="submit" className="w-full" disabled={isLoading || !recaptchaToken}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Sign Up
                 </Button>
