@@ -46,7 +46,7 @@ const BlogPostForm = () => {
           setExcerpt(data.excerpt || '');
           setCategory(data.category || '');
           setImageUrl(data.image_url || '');
-          setVideoUrl((data as any).video_url || '');
+          setVideoUrl(data.video_url || '');
           setPublished(data.published || false);
           setFeatured(data.featured || false);
         }
