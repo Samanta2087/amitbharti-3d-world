@@ -45,7 +45,6 @@ const Auth = () => {
     }
 
     try {
-      // @ts-expect-error
       const { error } = await signIn(email, password, captchaToken);
       if (error) {
         toast({
@@ -87,7 +86,6 @@ const Auth = () => {
     }
 
     try {
-      // @ts-expect-error
       const { error } = await signUp(email, password, captchaToken, displayName);
       if (error) {
         toast({

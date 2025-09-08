@@ -38,9 +38,9 @@ const UserManagement = () => {
     } else {
       // We need to fetch the email from the auth schema, as it's not in profiles
       const authUsersResponse = await supabase.auth.admin.listUsers();
-      if (authUsersResponse.data.users) {
+      if (authUsersResponse.data?.users && data) {
         const usersWithEmail = data.map(profile => {
-            const authUser = authUsersResponse.data.users.find(u => u.id === profile.user_id);
+            const authUser = authUsersResponse.data.users?.find((u: any) => u.id === profile.user_id);
             return {
                 ...profile,
                 email: authUser?.email || 'N/A'
@@ -48,7 +48,7 @@ const UserManagement = () => {
         });
         setUsers(usersWithEmail);
       } else {
-        setUsers(data);
+        setUsers(data || []);
       }
     }
     setLoading(false);
