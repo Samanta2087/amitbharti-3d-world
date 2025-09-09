@@ -3,6 +3,9 @@ import Hero from "@/components/Hero";
 import { YouTubeStats } from "@/components/realtime/YouTubeStats";
 import { LiveBlogFeed } from "@/components/realtime/LiveBlogFeed";
 import { UserPresence } from "@/components/realtime/UserPresence";
+import { AdsterraAd } from "@/components/ads/AdsterraAd";
+import { MontagAd } from "@/components/ads/MontagAd";
+import { IntergradAd } from "@/components/ads/IntergradAd";
 
 const Home = () => {
   useEffect(() => {
@@ -34,18 +37,23 @@ const Home = () => {
       <Hero />
       
       {/* Real-time Features Showcase */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
         
-        {/* Ad Containers */}
-        <div id="ad-container" style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }} />
-        
-        {/* Monetag Ad */}
-        <div className="flex justify-center my-8">
-          <div className="bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground mb-2">Advertisement</p>
-            <div className="h-24 w-full bg-gradient-to-r from-primary/10 to-secondary/10 rounded flex items-center justify-center">
-              <span className="text-muted-foreground text-xs">Monetag Ad Space</span>
-            </div>
+        {/* Ad Section */}
+        <div className="space-y-8">
+          {/* Adsterra Banner Ad */}
+          <div className="flex justify-center">
+            <AdsterraAd format="banner" width={728} height={90} />
+          </div>
+          
+          {/* Monetag Ad */}
+          <div className="flex justify-center">
+            <MontagAd width={300} height={250} />
+          </div>
+          
+          {/* Intergrad Ad */}
+          <div className="flex justify-center">
+            <IntergradAd width={728} height={90} />
           </div>
         </div>
 
