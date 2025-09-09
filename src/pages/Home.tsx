@@ -7,6 +7,7 @@ import { AdsterraAd } from "@/components/ads/AdsterraAd";
 import { MontagAd } from "@/components/ads/MontagAd";
 import { IntergradAd } from "@/components/ads/IntergradAd";
 
+
 const Home = () => {
   useEffect(() => {
     // Check if the ad container already has scripts to prevent duplicates
