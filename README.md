@@ -59,6 +59,9 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Firebase Authentication
+- Google reCAPTCHA
+- Intergrad Ad Network
 
 ## How can I deploy this project?
 
@@ -71,3 +74,24 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Firebase Setup
+
+1. Create a Firebase project at https://console.firebase.google.com/
+2. Enable Authentication and configure providers:
+   - Email/Password
+   - Google
+   - Facebook
+   - Phone
+3. Copy your Firebase config and add to `.env` file
+4. Set up Google reCAPTCHA at https://www.google.com/recaptcha/
+5. Add your reCAPTCHA site key to `.env` file
+
+## Ad Network Setup
+
+This project includes integration with:
+- Adsterra
+- Monetag
+- Intergrad (with multiple ad formats)
+
+Make sure to replace the ad keys with your actual keys from the respective ad networks.

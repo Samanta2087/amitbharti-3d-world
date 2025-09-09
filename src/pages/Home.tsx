@@ -52,9 +52,17 @@ const Home = () => {
             <MontagAd width={300} height={250} />
           </div>
           
-          {/* Intergrad Ad */}
+          {/* Intergrad Ads */}
           <div className="flex justify-center">
-            <IntergradAd width={728} height={90} />
+            <IntergradAd type="banner-728x90" />
+          </div>
+          
+          <div className="flex justify-center">
+            <IntergradAd type="banner-468x60" />
+          </div>
+          
+          <div className="flex justify-center">
+            <IntergradAd type="native" />
           </div>
         </div>
 
@@ -74,6 +82,10 @@ const Home = () => {
         <div className="mt-12 text-center">
           <UserPresence roomId="home" />
         </div>
+        
+        {/* Intergrad Popunder and Social Bar (loaded automatically) */}
+        <IntergradAd type="popunder" />
+        <IntergradAd type="social-bar" />
       </div>
     </main>
   );
