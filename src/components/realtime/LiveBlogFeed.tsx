@@ -1,20 +1,53 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useRealtimeBlogPosts } from '@/hooks/useRealtime';
 import { formatDistanceToNow } from 'date-fns';
 import { Clock, User, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SocialShare } from '@/components/SocialShare';
 
 interface LiveBlogFeedProps {
   className?: string;
   maxPosts?: number;
+  showSkeleton?: boolean;
 }
 
-export const LiveBlogFeed = ({ className, maxPosts = 10 }: LiveBlogFeedProps) => {
+export const LiveBlogFeed = ({ className, maxPosts = 10, showSkeleton = false }: LiveBlogFeedProps) => {
   const { blogPosts } = useRealtimeBlogPosts();
   
   const displayedPosts = blogPosts.slice(0, maxPosts);
+
+  if (showSkeleton || (blogPosts.length === 0 && !showSkeleton)) {
+    return (
+      <div className={className}>
+        <div className="flex items-center justify-between mb-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-6 w-24" />
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </div>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-32 w-full rounded-lg" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
@@ -26,13 +59,26 @@ export const LiveBlogFeed = ({ className, maxPosts = 10 }: LiveBlogFeedProps) =>
       </div>
 
       {displayedPosts.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">No blog posts yet</p>
+        <Card className="p-12 text-center bg-gradient-to-br from-muted/50 to-muted/30">
+          <div className="space-y-4">
+            <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+              <Eye className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-lg mb-2">No blog posts yet</h3>
+              <p className="text-muted-foreground">Be the first to know when new content drops!</p>
+            </div>
+            <Button variant="outline" className="mt-4">
+              Get Notified
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="space-y-4">
-          {displayedPosts.map((post) => (
-            <Card key={post.id} className="p-6 hover:shadow-lg transition-shadow">
+          {displayedPosts.map((post, index) => (
+            <Card key={post.id} className={`p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] ${
+              index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+            } ${post.featured ? 'ring-2 ring-primary/20' : ''}`}>
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -95,12 +141,19 @@ export const LiveBlogFeed = ({ className, maxPosts = 10 }: LiveBlogFeedProps) =>
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-4 border-t">
-                  <Button variant="outline" size="sm">
-                    Read More
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" className="hover:scale-105 transition-transform">
+                      Read More
+                    </Button>
+                    <SocialShare 
+                      url={`${window.location.origin}/blog/${post.id}`}
+                      title={post.title}
+                      description={post.excerpt}
+                    />
+                  </div>
                   
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 hover:text-foreground transition-colors cursor-pointer">
                       <Eye className="h-3 w-3" />
                       <span>View Post</span>
                     </div>

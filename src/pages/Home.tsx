@@ -36,8 +36,18 @@ const Home = () => {
       {/* Real-time Features Showcase */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         
-        {/* Your Ad Container */}
+        {/* Ad Containers */}
         <div id="ad-container" style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }} />
+        
+        {/* Monetag Ad */}
+        <div className="flex justify-center my-8">
+          <div className="bg-muted/30 border border-dashed border-muted-foreground/30 rounded-lg p-4 text-center">
+            <p className="text-sm text-muted-foreground mb-2">Advertisement</p>
+            <div className="h-24 w-full bg-gradient-to-r from-primary/10 to-secondary/10 rounded flex items-center justify-center">
+              <span className="text-muted-foreground text-xs">Monetag Ad Space</span>
+            </div>
+          </div>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* YouTube Stats */}

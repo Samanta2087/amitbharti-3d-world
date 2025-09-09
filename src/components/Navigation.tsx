@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationCenter } from "@/components/realtime/NotificationCenter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SearchButton } from "@/components/SearchButton";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,7 +95,10 @@ const Navigation = () => {
           </div>
 
           {/* Social Links & CTA */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
+            <SearchButton />
+            <ThemeToggle />
+            
             {socialLinks.map((social) => (
               <a
                 key={social.label}
