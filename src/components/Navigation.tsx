@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Youtube, Instagram, Send, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { NotificationCenter } from "@/components/realtime/NotificationCenter";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SearchButton } from "@/components/SearchButton";
@@ -18,7 +18,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
-  const { user, signOut } = useFirebaseAuth();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -118,9 +118,9 @@ const Navigation = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.photoURL || ''} alt={user.email ?? ''} />
+                        <AvatarImage src={user.user_metadata?.avatar_url || ''} alt={user.email ?? ''} />
                         <AvatarFallback>
-                          {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                          {user.user_metadata?.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
@@ -182,12 +182,12 @@ const Navigation = () => {
                 <div className="flex items-center justify-between px-4">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.photoURL || ''} alt={user.email ?? ''} />
+                      <AvatarImage src={user.user_metadata?.avatar_url || ''} alt={user.email ?? ''} />
                       <AvatarFallback>
-                        {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                        {user.user_metadata?.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{user.displayName || user.email}</span>
+                    <span className="text-sm font-medium">{user.user_metadata?.name || user.email}</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => { signOut(); setIsOpen(false); }}>
                     <LogOut className="mr-2 h-4 w-4" />
