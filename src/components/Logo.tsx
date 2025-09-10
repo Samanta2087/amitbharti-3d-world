@@ -11,8 +11,8 @@ export const Logo = ({ className = "", showText = true }: LogoProps) => {
       to="/" 
       className={`flex items-center space-x-2 hover:opacity-80 transition-opacity ${className}`}
     >
-      <div className="h-8 w-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
-        <span className="text-primary-foreground font-bold text-sm">AB</span>
+      <div className="h-8 w-8 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+        <span className="text-white font-bold text-sm">AB</span>
       </div>
       {showText && (
         <span className="font-semibold text-lg text-foreground">

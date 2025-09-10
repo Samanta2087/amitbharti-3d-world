@@ -12,7 +12,7 @@ const Hero = () => {
   const stats = [
     {
       icon: Users,
-      number: "120K+",
+      number: "130K+",
       label: "YouTube Subscribers",
       color: "text-red-500"
     },

@@ -99,7 +99,7 @@ const Footer = () => {
             <h3 className="font-poppins font-semibold text-lg mb-4">Community</h3>
             <div className="space-y-3">
               <div className="text-sm">
-                <span className="text-primary font-semibold">120K+</span>
+                <span className="text-primary font-semibold">130K+</span>
                 <span className="text-muted-foreground ml-2">YouTube Subscribers</span>
               </div>
               <div className="text-sm">
