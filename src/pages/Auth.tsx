@@ -5,27 +5,43 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/hooks/useAuth';
-import { useGoogleAuth } from '@/hooks/useGoogleAuth';
+import { useFirebaseAuth } from '@/hooks/useFirebaseAuth';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Phone, MessageSquare } from 'lucide-react';
 import ReCAPTCHA from "react-google-recaptcha";
+import { ConfirmationResult } from 'firebase/auth';
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user, signIn, signUp, loading } = useAuth();
-  const { signInWithGoogle } = useGoogleAuth();
+  const { 
+    user, 
+    loading, 
+    signInWithEmail, 
+    signUpWithEmail, 
+    signInWithGoogle, 
+    signInWithFacebook,
+    signInWithPhone,
+    verifyPhoneCode,
+    setupRecaptcha,
+    signOut 
+  } = useFirebaseAuth();
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  
   const captchaRef = useRef<ReCAPTCHA>(null);
+  const recaptchaContainerRef = useRef<HTMLDivElement>(null);
 
-  // IMPORTANT: Replace this with your actual Google reCAPTCHA Site Key
-  const VITE_RECAPTCHA_SITE_KEY = "6LcmeMIrAAAAAA5Ht3NSEu0FszWehtupmgOm8KmL";
+  // Use the reCAPTCHA site key from environment variables
+  const VITE_RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LdD18MrAAAAAKXyTgvHJDqvhmzglUkrXG4a7llH";
 
   useEffect(() => {
     if (user && !loading) {
@@ -33,7 +49,7 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -47,34 +63,26 @@ const Auth = () => {
       return;
     }
 
-    try {
-      const { error } = await signIn(email, password, captchaToken);
-      if (error) {
-        toast({
-          title: "Sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Welcome back!",
-          description: "You have been signed in successfully.",
-        });
-      }
-    } catch (error) {
+    const { user, error } = await signInWithEmail(email, password);
+    if (error) {
       toast({
-        title: "An error occurred",
-        description: "Please try again later.",
+        title: "Sign in failed",
+        description: error,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-      captchaRef.current?.reset();
-      setCaptchaToken(null);
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "You have been signed in successfully.",
+      });
     }
+    
+    setIsLoading(false);
+    captchaRef.current?.reset();
+    setCaptchaToken(null);
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -88,53 +96,99 @@ const Auth = () => {
       return;
     }
 
-    try {
-      const { error } = await signUp(email, password, captchaToken, displayName);
-      if (error) {
-        toast({
-          title: "Sign up failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Account created!",
-          description: "Please check your email to verify your account.",
-        });
-      }
-    } catch (error) {
+    const { user, error } = await signUpWithEmail(email, password, displayName);
+    if (error) {
       toast({
-        title: "An error occurred",
-        description: "Please try again later.",
+        title: "Sign up failed",
+        description: error,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-      captchaRef.current?.reset();
-      setCaptchaToken(null);
+    } else {
+      toast({
+        title: "Account created!",
+        description: "Your account has been created successfully.",
+      });
     }
+    
+    setIsLoading(false);
+    captchaRef.current?.reset();
+    setCaptchaToken(null);
   };
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        toast({
-          title: "Google sign in failed",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+    const { user, error } = await signInWithGoogle();
+    if (error) {
       toast({
-        title: "An error occurred",
-        description: "Please try again later.",
+        title: "Google sign in failed",
+        description: error,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
+  };
+
+  const handleFacebookSignIn = async () => {
+    setIsLoading(true);
+    const { user, error } = await signInWithFacebook();
+    if (error) {
+      toast({
+        title: "Facebook sign in failed",
+        description: error,
+        variant: "destructive",
+      });
+    }
+    setIsLoading(false);
+  };
+
+  const handlePhoneSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    if (recaptchaContainerRef.current) {
+      const recaptchaVerifier = setupRecaptcha('recaptcha-container');
+      const { confirmationResult, error } = await signInWithPhone(phoneNumber, recaptchaVerifier);
+      
+      if (error) {
+        toast({
+          title: "Phone sign in failed",
+          description: error,
+          variant: "destructive",
+        });
+      } else if (confirmationResult) {
+        setConfirmationResult(confirmationResult);
+        setShowPhoneVerification(true);
+        toast({
+          title: "Verification code sent",
+          description: "Please check your phone for the verification code.",
+        });
+      }
+    }
+    
+    setIsLoading(false);
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirmationResult) return;
+    
+    setIsLoading(true);
+    const { user, error } = await verifyPhoneCode(confirmationResult, verificationCode);
+    
+    if (error) {
+      toast({
+        title: "Verification failed",
+        description: error,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Phone verified!",
+        description: "You have been signed in successfully.",
+      });
+    }
+    
+    setIsLoading(false);
   };
 
   if (loading) {
@@ -156,68 +210,197 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="signin" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <Tabs defaultValue="email" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="email">Email</TabsTrigger>
+              <TabsTrigger value="phone">Phone</TabsTrigger>
+              <TabsTrigger value="social">Social</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
+            {/* Email Authentication */}
+            <TabsContent value="email">
+              <Tabs defaultValue="signin" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="signin">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
-                      required
+                <TabsContent value="signin">
+                  <form onSubmit={handleEmailSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signin-password"
+                          type="password"
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <ReCAPTCHA
+                      sitekey={VITE_RECAPTCHA_SITE_KEY}
+                      onChange={(token) => setCaptchaToken(token)}
+                      ref={captchaRef}
                     />
-                  </div>
-                </div>
+
+                    <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Sign In
+                    </Button>
+                  </form>
+                </TabsContent>
                 
-                <ReCAPTCHA
-                  sitekey={VITE_RECAPTCHA_SITE_KEY}
-                  onChange={(token) => setCaptchaToken(token)}
-                  ref={captchaRef}
-                />
+                <TabsContent value="signup">
+                  <form onSubmit={handleEmailSignUp} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Display Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Enter your display name"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          placeholder="Create a password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
-                </Button>
+                    <ReCAPTCHA
+                      sitekey={VITE_RECAPTCHA_SITE_KEY}
+                      onChange={(token) => setCaptchaToken(token)}
+                      ref={captchaRef}
+                    />
+                    
+                    <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Sign Up
+                    </Button>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+            {/* Phone Authentication */}
+            <TabsContent value="phone">
+              {!showPhoneVerification ? (
+                <form onSubmit={handlePhoneSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+1234567890"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or continue with
-                    </span>
+                  
+                  <div id="recaptcha-container" ref={recaptchaContainerRef}></div>
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send Verification Code
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleVerifyCode} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="verification-code">Verification Code</Label>
+                    <div className="relative">
+                      <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="verification-code"
+                        type="text"
+                        placeholder="Enter 6-digit code"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Verify Code
+                  </Button>
+                  
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => setShowPhoneVerification(false)}
+                  >
+                    Back to Phone Number
+                  </Button>
+                </form>
+              )}
+            </TabsContent>
 
+            {/* Social Authentication */}
+            <TabsContent value="social">
+              <div className="space-y-4">
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -233,69 +416,20 @@ const Auth = () => {
                   </svg>
                   Continue with Google
                 </Button>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Display Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signup-name"
-                      type="text"
-                      placeholder="Enter your display name"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Create a password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
 
-                <ReCAPTCHA
-                  sitekey={VITE_RECAPTCHA_SITE_KEY}
-                  onChange={(token) => setCaptchaToken(token)}
-                  ref={captchaRef}
-                />
-                
-                <Button type="submit" className="w-full" disabled={isLoading || !captchaToken}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign Up
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full" 
+                  disabled={isLoading}
+                  onClick={handleFacebookSignIn}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  Continue with Facebook
                 </Button>
-              </form>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
