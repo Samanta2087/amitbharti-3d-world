@@ -35,6 +35,9 @@ const Navigation = () => {
     { name: "About", path: "/about" },
     { name: "Blog", path: "/blog" },
     { name: "Contact", path: "/contact" },
+    { name: "Privacy Policy", path: "/privacypolicy" },
+    { name: "Disclaimer", path: "/disclaimer" },
+    { name: "Terms & Conditions", path: "/termscondition" },
   ];
 
   const socialLinks = [

@@ -60,11 +60,11 @@ const Hero = () => {
                 <span className="block gradient-text animate-gradient">Amit Bharti</span>
               </h1>
               <div className="text-xl md:text-2xl text-muted-foreground font-medium">
-                Welcome to My Website!
+                Welcome to My Finance + Tech Website!
               </div>
               <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
-                <span className="text-primary font-semibold">Educational.</span>
-                <span className="text-accent font-semibold"> Online Earning.</span>
+                <span className="text-primary font-semibold">Finance.</span>
+                <span className="text-accent font-semibold"> Technology.</span>
               </p>
             </div>
 

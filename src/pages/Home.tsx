@@ -1,91 +1,44 @@
 import React, { useEffect } from 'react';
+import { AdSlot } from '@/components/ads/AdSlot';
 import Hero from "@/components/Hero";
 import { YouTubeStats } from "@/components/realtime/YouTubeStats";
 import { LiveBlogFeed } from "@/components/realtime/LiveBlogFeed";
 import { UserPresence } from "@/components/realtime/UserPresence";
-import { AdsterraAd } from "@/components/ads/AdsterraAd";
-import { MontagAd } from "@/components/ads/MontagAd";
-import { IntergradAd } from "@/components/ads/IntergradAd";
 
 
 const Home = () => {
   useEffect(() => {
-    // Check if the ad container already has scripts to prevent duplicates
-    const adContainer = document.getElementById('ad-container');
-    if (adContainer && adContainer.childElementCount === 0) {
-      const atOptionsScript = document.createElement('script');
-      atOptionsScript.type = 'text/javascript';
-      atOptionsScript.innerHTML = `
-        atOptions = {
-          'key' : '565710656c75f6dcace9eb21130676f4',
-          'format' : 'iframe',
-          'height' : 90,
-          'width' : 728,
-          'params' : {}
-        };
-      `;
-      adContainer.appendChild(atOptionsScript);
-
-      const adScript = document.createElement('script');
-      adScript.type = 'text/javascript';
-      adScript.src = "//www.highperformanceformat.com/565710656c75f6dcace9eb21130676f4/invoke.js";
-      adContainer.appendChild(adScript);
-    }
+    document.documentElement.classList.add('dark');
+    return () => document.documentElement.classList.remove('dark');
   }, []);
 
   return (
-    <main>
+    <main className="min-h-screen w-full bg-white px-2 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8 lg:py-16">
       <Hero />
-      
       {/* Real-time Features Showcase */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
-        
-        {/* Ad Section */}
-        <div className="space-y-8">
-          {/* Adsterra Banner Ad */}
-          <div className="flex justify-center">
-            <AdsterraAd format="banner" width={728} height={90} />
-          </div>
-          
-          {/* Monetag Ad */}
-          <div className="flex justify-center">
-            <MontagAd width={300} height={250} />
-          </div>
-          
-          {/* Intergrad Ads */}
-          <div className="flex justify-center">
-            <IntergradAd type="banner-728x90" />
-          </div>
-          
-          <div className="flex justify-center">
-            <IntergradAd type="banner-468x60" />
-          </div>
-          
-          <div className="flex justify-center">
-            <IntergradAd type="native" />
-          </div>
+      <div className="max-w-7xl mx-auto w-full space-y-8 md:space-y-12">
+        {/* Reusable Ad Slot */}
+        <div className="flex flex-col items-center gap-4 md:gap-6 my-4 md:my-8 w-full">
+          <AdSlot type="banner-728x90" />
+          <AdSlot type="banner-468x60" />
+          <AdSlot type="nativebanner" />
+          <AdSlot type="social-bar" />
+          <AdSlot type="popunder" />
+          <AdSlot type="smartlink" />
         </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 w-full">
           {/* YouTube Stats */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 w-full">
             <YouTubeStats />
           </div>
-          
           {/* Live Blog Feed */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 w-full">
             <LiveBlogFeed maxPosts={3} />
           </div>
         </div>
-        
-        {/* User Presence */}
-        <div className="mt-12 text-center">
-          <UserPresence roomId="home" />
-        </div>
-        
-        {/* Intergrad Popunder and Social Bar (loaded automatically) */}
-        <IntergradAd type="popunder" />
-        <IntergradAd type="social-bar" />
+      </div>
+      <div className="w-full mt-4">
+        <UserPresence roomId="home" />
       </div>
     </main>
   );

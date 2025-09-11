@@ -1,3 +1,11 @@
+  const signInWithProvider = async (provider: 'google' | 'facebook') => {
+    const redirectUrl = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: redirectUrl }
+    });
+    return { error };
+  };
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,5 +73,6 @@ export const useAuth = () => {
     signIn,
     signUp,
     signOut
+  ,signInWithProvider
   };
 };

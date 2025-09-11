@@ -6,15 +6,18 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import Home from "./pages/Home";
-import Videos from "./pages/Videos";
-import About from "./pages/About";
-import Blog from "./pages/Blog";
-// import Merch from "./pages/Merch";
-import Contact from "./pages/Contact";
-import Admin from "./pages/Admin";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
+import Home from "@/pages/Home";
+import Videos from "@/pages/Videos";
+import About from "@/pages/About";
+import Blog from "@/pages/Blog";
+// import Merch from "@/pages/Merch";
+import Contact from "@/pages/Contact";
+import Admin from "@/pages/Admin";
+import Auth from "@/pages/Auth";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Disclaimer from "@/pages/Disclaimer";
+import TermsCondition from "@/pages/TermsCondition";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,9 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin/*" element={<Admin />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+              <Route path="/disclaimer" element={<Disclaimer />} />
+              <Route path="/termscondition" element={<TermsCondition />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

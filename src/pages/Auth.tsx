@@ -17,7 +17,8 @@ const Auth = () => {
     loading, 
     signIn,
     signUp,
-    signOut 
+    signOut,
+    signInWithProvider
   } = useAuth();
   const { toast } = useToast();
   
@@ -124,6 +125,19 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
+          <div className="flex flex-col gap-2 mb-4">
+            <Button variant="outline" onClick={() => signInWithProvider('google')} className="w-full">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2 inline" />
+              Continue with Google
+            </Button>
+            <Button variant="outline" onClick={() => signInWithProvider('facebook')} className="w-full">
+              <span className="h-5 w-5 mr-2 inline-block align-middle">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="20" height="20"><g><circle cx="16" cy="16" r="16" fill="#3b5998"/><path d="M22.675 16.001h-3.197v10.667h-4.266V16.001h-2.133v-3.733h2.133v-2.4c0-2.133 1.067-5.467 5.467-5.467l4 0.017v3.6h-2.9c-0.467 0-1.133 0.233-1.133 1.233v2.017h4.033l-0.533 3.733z" fill="#fff"/></g></svg>
+              </span>
+              Continue with Facebook
+            </Button>
+            <div className="text-center text-xs text-muted-foreground my-2">or</div>
+          </div>
           <Tabs defaultValue="email" className="space-y-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
